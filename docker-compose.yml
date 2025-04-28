@@ -1,8 +1,11 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  yii2-app:
-    build: ./docker
+  yii2app:
+    build: .
+    container_name: yii2_app
     ports:
       - "8080:80"
-    restart: always
+    environment:
+      - COMPOSER_ALLOW_SUPERUSER=1
+    restart: unless-stopped
