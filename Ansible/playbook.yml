@@ -1,0 +1,48 @@
+- hosts: webserver
+  become: yes
+
+  vars_files:
+    - vars.yml
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name:
+          - docker.io
+          - docker-compose
+          - nginx
+          - git
+          - php
+          - php-mysql
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Initialize Docker Swarm
+      shell: docker swarm init
+      ignore_errors: yes
+
+    - name: Copy NGINX configuration
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/yii2.conf
+
+    - name: Enable NGINX configuration
+      file:
+        src: /etc/nginx/sites-available/yii2.conf
+        dest: /etc/nginx/sites-enabled/yii2.conf
+        state: link
+        force: yes
+
+    - name: Restart NGINX
+      systemd:
+        name: nginx
+        state: restarted
+
+    - name: Deploy Yii2 app service
+      shell: docker service create --name yii2app --publish 3000:80 yourdockerhub/yourapp:latest
