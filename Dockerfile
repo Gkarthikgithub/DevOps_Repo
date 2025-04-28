@@ -1,30 +1,34 @@
-FROM php:7.4-apache
+# Use official PHP image with necessary extensions
+FROM php:8.1-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    unzip \
     git \
-    curl \
+    unzip \
     libzip-dev \
-    && docker-php-ext-install pdo_mysql zip
+    && docker-php-ext-install zip pdo pdo_mysql
 
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
 
-# Copy app files
-COPY src/ /var/www/html/
+# Install Composer globally
+COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
-WORKDIR /var/www/html/
+WORKDIR /var/www/html
 
-# Install Yii2 PHP dependencies
-RUN composer install --no-interaction --optimize-autoloader
+# Create Yii2 app in src/ folder
+RUN composer create-project --prefer-dist yiisoft/yii2-app-basic src/
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/
+# Set document root to src/web
+RUN sed -i 's|/var/www/html|/var/www/html/src/web|g' /etc/apache2/sites-available/000-default.conf
+
+# Set permissions (optional, useful for Yii2 runtime/logs/assets folders)
+RUN chown -R www-data:www-data /var/www/html/src \
+    && chmod -R 755 /var/www/html/src
 
 # Expose port 80
 EXPOSE 80
 
-# Healthcheck (optional, good for Swarm!)
-HEALTHCHECK CMD curl --fail http://localhost || exit 1
+# Start Apache in the foreground
+CMD ["apache2-foreground"]
