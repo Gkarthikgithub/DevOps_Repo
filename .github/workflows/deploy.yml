@@ -27,6 +27,10 @@ jobs:
        docker compose build
 
 
-    - name: Push image to Docker Hub
+    - name: Tag Docker image
       run: |
-        docker compose push
+        docker tag karthikeyudu/php-image:latest karthikeyudu/php:latest
+
+    - name: Push Docker image
+      run: |
+        docker push karthikeyudu/php:latest
