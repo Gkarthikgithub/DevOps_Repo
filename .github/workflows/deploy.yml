@@ -29,8 +29,18 @@ jobs:
 
     - name: Tag Docker image
       run: |
-        docker tag karthikeyudu/php-image:latest karthikeyudu/php:latest
+        docker tag karthikeyudu/php-image:latest karthikeyudu/php:${{ github.run_number }}
 
     - name: Push Docker image
       run: |
-        docker push karthikeyudu/php:latest
+        docker push karthikeyudu/php:${{ github.run_number }}
+        
+    - name: SSH into Server and Run Docker Commands
+      uses: appleboy/ssh-action@master
+      with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+           echo "Running on $(hostname)"
