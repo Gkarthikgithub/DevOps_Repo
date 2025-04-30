@@ -44,3 +44,5 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
            echo "Running on $(hostname)"
+           docker pull karthikeyudu/php:${{ github.run_number }}
+           docker run -d -p 8080:80 karthikeyudu/php:${{ github.run_number }}
