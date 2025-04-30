@@ -46,4 +46,5 @@ jobs:
            echo "Running on $(hostname)"
            docker pull karthikeyudu/php:${{ github.run_number }}
            docker swarm init
+           docker service rm php-service
            docker service create --name php-service --replicas 1 -p 8080:80 karthikeyudu/php:${{ github.run_number }}
