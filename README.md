@@ -17,3 +17,6 @@ add ec2 server ip , port and username and private key in the github repository s
 create a key pair using the ssh-keygen command.
 add public key in the authorized keys in the server and private key in the github secrets for authentication between github actionas and ec2 instance.
 
+
+Application URL :  http://<server-ip>:8080/
+
