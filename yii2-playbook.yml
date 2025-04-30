@@ -1,0 +1,87 @@
+---
+- name: Deploy Yii2 App Locally on Docker Swarm with Git Clone and Image Build
+  hosts: localhost
+  become: yes
+  connection: local
+
+  vars:
+    yii2_repo: "https://github.com/Gkarthikgithub/DevOps_Repo.git"
+    yii2_app_path: "/opt/php-app/"
+    image_name: "yii2-app-image"
+    docker_build_path: "/opt/php-app/project/yii2-sample-app"
+    service_name: "php-service"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - git
+          - curl
+          - php-cli
+          - php-mbstring
+          - unzip
+          - gnupg
+          - nginx
+          - docker.io
+        state: present
+
+    - name: Install Docker Compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.24.6/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Enable and start Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Initialize Docker Swarm
+      shell: docker swarm init || true
+
+    - name: Clone Yii2 repository
+      git:
+        repo: "{{ yii2_repo }}"
+        dest: "{{ yii2_app_path }}"
+        version: main
+        force: yes
+
+    - name: Build Docker image for Yii2 app
+      shell: |
+        cd  {{ docker_build_path }}
+        docker build -t {{ image_name }} .
+      args:
+        creates: "{{ docker_build_path }}/Dockerfile"
+
+    - name: Deploy Docker Swarm service
+      shell: |
+        docker service rm {{ service_name }} || true
+        docker service create \
+          --name {{ service_name }} \
+          --replicas 1 \
+          -p 8080:80 \
+          {{ image_name }}
+
+    - name: Configure NGINX reverse proxy
+      copy:
+        dest: /etc/nginx/sites-available/default
+        content: |
+          server {
+              listen 80;
+
+              location / {
+                  proxy_pass http://3.91.20.58:8080;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+              }
+          }
+
+    - name: Restart NGINX
+      systemd:
+        name: nginx
+        state: restarted
