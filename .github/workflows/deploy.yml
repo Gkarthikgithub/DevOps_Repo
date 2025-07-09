@@ -1,4 +1,4 @@
-name: Build and Deploy PHP Docker App
+name: Build and Deploy PHP Docker App  to server
 
 on:
   push:
