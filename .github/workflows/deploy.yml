@@ -2,7 +2,7 @@ name: Build and Deploy PHP Docker App
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]   #####change the branch as necessary##
 
 jobs:
   build-and-deploy:
