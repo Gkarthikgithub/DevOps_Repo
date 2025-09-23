@@ -1,0 +1,21 @@
+#!/bin/bash
+export ORACLE_SID=CRTESTCDB
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=/u01/app/oracle/product/19.0.0/db1
+export PATH=$ORACLE_HOME/bin:$PATH
+export ORACLE_PDB_SID=CRTEST2
+#export PATH=$ORACLE_HOME/bin:$PATH
+nohup expdp  \"/ as sysdba\"  dumpfile=CRTEST2_`date '+%d%m%Y_%H%M%S'`.dmp directory=DB_DUMP_DIR logfile=CRTEST2_`date '+%d%m%Y_%H%M%S'`.log FULL=Y  EXCLUDE=STATISTICS &
+export ORACLE_PDB_SID=V2CRTEST
+nohup expdp  \"/ as sysdba\"  dumpfile=V2CRTEST_`date '+%d%m%Y_%H%M%S'`.dmp directory=DB_DUMP_DIR logfile=V2CRTEST_`date '+%d%m%Y_%H%M%S'`.log FULL=Y EXCLUDE=STATISTICS &
+export ORACLE_PDB_SID=APEX
+nohup expdp  \"/ as sysdba\"  dumpfile=APEX_`date '+%d%m%Y_%H%M%S'`.dmp directory=DB_DUMP_DIR logfile=APEX_`date '+%d%m%Y_%H%M%S'`.log FULL=Y EXCLUDE=STATISTICS &
+export ORACLE_PDB_SID=RSTRIAL
+nohup expdp  \"/ as sysdba\"  dumpfile=RSTRIAL_`date '+%d%m%Y_%H%M%S'`.dmp directory=DB_DUMP_DIR logfile=RSTRIAL_`date '+%d%m%Y_%H%M%S'`.log FULL=Y EXCLUDE=STATISTICS &
+
+
+1.sudo docker exec -it <Postgres-Cont-ID> bash   
+2.pg_dumpall -U postgres > pg_dumpall.sql 
+3.exit
+4.sudo docker cp Postgres-Cont-ID:/path/to/dump-file  /path/in/host
+ 

@@ -1,0 +1,78 @@
+
+name: Build and Deploy to Test environment
+
+on:
+  push:
+    branches:
+      - etl_automation
+
+jobs:
+  build:
+    runs-on: self-hosted
+   
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2  # Fetch the last 2 commits to ensure the previous commit is available
+
+      - name: Fetch the commit history
+        run: git fetch --no-tags --prune --depth=2 origin ${{ github.ref }}
+
+      - name: Get changes
+        run: git diff --name-only -r HEAD^1 HEAD
+
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install OJET CLI
+        run: npm install -g @oracle/ojet-cli
+
+      - name: Build OJET project
+        run: |
+          ojet restore
+          ojet build
+
+
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.TEST_SSH_KEY }}
+
+      - name: Add server's host key to known_hosts
+        run: ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.TEST_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Ensure appropriate permissions on local files
+        run: chmod -R 755 ${{ github.workspace }}/web
+
+      - name: Copy files to server
+        run: |
+         ssh -p ${{ secrets.SSH_PORT }} ubuntu@${{ secrets.TEST_HOST }} 'rm -rf /home/ubuntu/Admin/web'
+         scp -r -P ${{ secrets.SSH_PORT }} ${{ github.workspace }}/web ubuntu@${{ secrets.TEST_HOST }}:/home/ubuntu/Admin
+
+      - name: SSH into Server and Run Docker Commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.TEST_HOST }}
+          username: ${{ secrets.TEST_USERNAME }}
+          key: ${{ secrets.TEST_SSH_KEY }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+           echo "Running on $(hostname)"
+           sudo docker cp /home/ubuntu/Admin/. 200f2816cf2b:/usr/share/nginx/html/Admin/
+           sudo docker exec 200f2816cf2b nginx -s reload
+      - name: Final status
+        if: always() 
+        run: echo "Workflow completed with status:${{ job.status }}"
+  
+
+            
+           
+
+ 
+     

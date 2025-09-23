@@ -1,0 +1,46 @@
+lsblk    ---> shows current disk information
+sudo lvdisplay
+sudo vgdisplay
+sudo pvdisplay --->Shows details of physical volumes used in LVM
+sudo fdisk /dev/sda   ---> creates a partition 
+sudo partx /dev/sda   --->Tells the kernel to re-read the partition table of /dev/sda
+lsblk /dev/sda        --->Displays the block device /dev/sda with its partitions
+sudo pvcreate /dev/sda4 --->Initializes /dev/sda4 as a physical volume for LVM
+lsblk /dev/sda
+sudo vgextend ocivolume /dev/sda4  --->Adds the new physical volume /dev/sda4 to an existing volume group named ocivolume
+(or)
+sudo vgextend ocivolume c8a0fb4d-bb15-864a-8c42-7a6d4a5dbffc
+df -hT
+sudo vgextend ocivolume /dev/sda4
+sudo vgdisplay
+sudo lvdisplay
+sudo lvextend -l +100%FREE /dev/ocivolume/root    --->Extends the logical volume /dev/ocivolume/root to use all available free space in the volume group
+sudo xfs_growfs /              --->Expands the XFS filesystem on the root (/) mount point to fill the resized logical volume
+df -hT               
+sudo yum clean all
+
+
+1.Create a Partition
+sudo fdisk
+
+2.make partition to filesystem
+sudo mkfs.xfs /dev/sda4
+
+3.Tells the kernel to re-read the partition table of /dev/sda
+sudo partx /dev/sda4
+
+
+4.create a physical volume
+sudo pvcreate /dev/sda4
+
+5.extend the volume
+sudo vgextend ocivolume /dev/sda4
+
+6.attach a new logical volume 
+sudo lvextend -l +100%FREE /dev/mapper/ocivolume-root
+
+7.Expand the XFS filesystem on the root (/) mount point to fill the resized logical volume
+sudo xfs_growfs / 
+
+8.Verify the changes 
+df -hT

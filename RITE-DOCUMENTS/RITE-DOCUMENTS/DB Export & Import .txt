@@ -1,0 +1,40 @@
+============================================
+								DATABASE EXPORT & IMPORT Commands
+******************************************************************************************************************************
+DATABASE FULL EXPORT:
+ 
+nohup expdp \"/ as sysdba\" dumpfile=export.dmp directory=RITESYNC_DATA logfile=export.log EXCLUDE=STATISTICS FULL=Y &
+ 
+******************************************************************************************************************************
+Specific schema export:
+ 
+nohup expdp \"/ as sysdba\" schemas=Test-Schema dumpfile=Schema_export.log.dmp directory=RITESYNC_DATA logfile=Schema_export.log &
+ 
+*******************************************************************************************************************************
+DATABASE FULL IMPORT:
+ 
+nohup impdp \"/ as sysdba\" directory=DATA_PUMP dumpfile=TIMERTPDB_25052025_000001.dmp logfile=TIMERTPDB_25052025_000001.log table_exists_action=replace FULL=Y &
+ 
+**********************************************************************************************************************************
+Specific schema IMPORT:
+ 
+nohup impdp \"/ as sysdba\" directory=RITESYNC_DATA dumpfile=import_Schema.dmp logfile=import_Schema.log schema=EVERESTDEV3POD table_exists_action=replace &
+ 
+***********************************************************************************************************************************
+
+
+nohup expdp \"/ as sysdba\" schemas=RITE dumpfile=APEX_Schema_export.log.dmp directory=dpump_dir logfile=Apex_Schema_export.log &
+
+
+nohup impdp \"/ as sysdba\" directory=PDB_DUMPS dumpfile=APEX_Schema_export.log.dmp logfile=APEX_Schema_export.log schemas=RITE table_exists_action=replace &
+
+
+
+
+
+
+
+
+
+
+

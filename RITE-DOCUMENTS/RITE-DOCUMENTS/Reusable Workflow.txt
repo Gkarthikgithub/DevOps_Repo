@@ -1,0 +1,30 @@
+
+name: release-ci.yaml
+on:
+
+  workflow_dispatch:
+    inputs:
+      docker_tag:
+        required: true
+        default: 'admin-1.0'
+        type: choice
+        options:
+          - admin-4.2
+          - admin-4.0
+          - admin-4.1
+     
+    
+
+  push:
+    branches: CR20-SPR16-2024
+  pull_request:
+    branches: CR20-SPR16-2024
+
+  # workflow_dispatch:
+
+jobs:
+  call-workflow-A:
+    uses: RiteProductsPlatform/CI-CD/.github/workflows/general-java-ci-flow.yml@main
+    with:
+      username: Gkarthikgithub
+    secrets: inherit

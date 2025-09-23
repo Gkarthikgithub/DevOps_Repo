@@ -1,0 +1,67 @@
+#!/bin/bash
+
+EMAIL="karthikeyudu.galla@rite.digital"
+DB_USER="sys" # Replace with your DB user
+DB_PASS="SYSADMIN" # Replace with your DB password
+ORACLE_SID="CRTESTCDB" # Replace with your Oracle SID
+
+
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=/u01/app/oracle/product/19.0.0/db1
+export PATH=$ORACLE_HOME/bin:$PATH
+export ORACLE_SID=CRTESTCDB
+
+# Check database status
+DB_STATUS=$(sqlplus -s $DB_USER/$DB_PASS@$ORACLE_SID as sysdba <<EOF
+SET PAGESIZE 0 FEEDBACK OFF VERIFY OFF HEADING OFF ECHO OFF
+SELECT STATUS FROM V\$INSTANCE;
+EXIT;
+EOF
+)
+
+# Check system usage
+#DISK_USAGE=$(df -h | grep '/$' | awk '{print $5}')
+DISK_USAGE=$(df -h | awk 'NR>1 {print $5, $6}' | sort -rh | head -n 5)
+MEMORY_USAGE=$(free -m | awk '/Mem:/ {printf "%.2f%%", $3/$2 * 100.0}')
+CPU_USAGE=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4"%"}')
+
+# Create email body
+REPORT="Oracle DB Status Report:
+================================
+Database Status: $DB_STATUS
+Disk Usage: $DISK_USAGE
+Memory Usage: $MEMORY_USAGE
+CPU Usage: $CPU_USAGE
+================================"
+
+# Send email
+echo "$REPORT" | mail -s "Oracle DB Status Report" $EMAIL
+
+
+
+UPLOAD DB BACKUP FILES TO BUCKET IN OCI
+
+
+1.Login to the Oci console 
+2.Go to the profile
+3.click on create api key and create private key.
+4.copy the file from downloads to remote server to the oracle user
+5.chnage the permissions of the file from root to oracle
+sudo chown oracle:oinstall /path/to/pem-file
+
+
+5.Login to the Oracle user
+sudo su - oracle
+6.Install Oci Cli in the Server
+curl -L https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh | bash
+
+7.configure the oci setup 
+oci setup config
+enter the user details like user id, tenancy id, region and give the path where private key is copied.
+8. use the following command to copy files from server to oci bucket
+oci os object put --bucket-name Database_Backups --file /u01/pdb_dumps/TMZDPDB_26112024_092524.dmp --namespace idjm2yj32zav --name Prod_DB\'s_Backups/TMZDPDB_26112024_092524.dmp
+
+
+
+
+

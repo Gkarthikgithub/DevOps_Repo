@@ -1,0 +1,65 @@
+ 
+ 1.CREATE A PDB USING SQL PLUS
+cr 2.OPEN THE PDB
+ alter pluggable database pdb1 open;
+ 3.DROP THE DATABASE
+ alter pluggable database pdb1 close;               ----> we need to close the pdb before dropping it. 
+ drop pluggable database pdb1 including datafiles;  ---> drops the pdb along with datafiles
+ 4.DROP THE DATABASE BUT KEEP DATAFILES
+ alter pluggable database pdb1 close immediate  ----> close the database
+ alter pluggable database pdb1 unplug into '/u02/oradata/RITECDB/pdb1.xml';  ---> unplug the pdb from cdb and move files into an xml file 
+ drop pluggable database pdb1 keep datafiles;      ----> drops the pdb but retains the datafiles 
+5.set timing on;   -----> when this parameter is set , it shows time elpased for every statement
+6.show con_id, con_name  --->shows to which pdb we are connected.
+7.RENAME A PDB
+ alter pluggable database pdb1 close immediate;
+ alter pluggable database pdb1 open restricted;
+ alter session set container=pdb1;
+ alter pluggable database pdb1 rename global_name to pdb2;
+ alter pluggable database pdb2 close immediate;
+ alter pluggable database pdb2 open ;
+ 
+ ORACLE DB MEMORY CONTENTS
+ 1.SYSTEM GLOBAL AREA
+ a.shared pool:- it contains the sql and plsql code written by the users. It also saves data dictionary of accessed objects
+ b.database buffer cache: saves the data blocks requested by users.
+ c.redo log buffer : it is contains the information required to redo the changes done by users.
+ d.large pool: it is used for data recovery and rman operations.
+ e.java pool: it is used for java operations.
+ 2.PROGRAM GLOBAL AREA
+ a.sql work area : this space is used for sql operations
+ b.session memory: this memory is used when a session is active 
+ 8.CREATE TABLESPACE
+ create tablespace convertrite datafile '/path/to/datafile/' size 5G autoextend on 1G maxsize unlimited.
+ 9.ADD DATAFILE TO TABLESPACE
+ alter tablespace convertrite add datafile '/u02/oradata/RITECDB/DEVDB/datafile01.dbf/' size 64 autoextend on 2g maxsize 64g;
+ 10.INCREASE TABLESPACE SIZE
+ alter database datafile '/u02/oradata/RITECDB/DEVDB/datafile01.dbf/' resize 10g;
+ 11.DROP TABLESPACE
+ drop tablespace including contents and datafiles;
+ 12.INSERT TABLE INTO TABLESPACE
+ CREATE TABLE EMPLOYEE ( NAME VARCHAR2(50), AGE NUMBER(5) TABLESPACE PRACTISE;
+ 13.CREATE BIG FILR TABLESPACE
+ create bigfile tablespace convertrite datafile '/path/to/datafile/' size 5G autoextend on 1G maxsize unlimited.
+ 14.TAKE TABLESPACE OFFLINE
+ alter tablespace convertrite offline normal;  ---> THIS IS PREFERRED
+ alter tablespace convertrite offline TEMPORARY;
+ alter tablespace convertrite offline IMMEDIATE;  -----> we need to take backups for datafiles
+ 15.BRING TABLESPACE ONLINE
+ alter tablespace convertrite online;
+ 16. BY DEFAULT a user cannot create tables in a tablespace . we need to assaign some quota to user for the tablespace
+ create user karthik identified by karthik default tablespace convertrite quota 100m on convertrite ;
+ alter user karthik quota unlimited on tablespace convertrite;   ----> provides unlimited quota on tablespace
+ 17.MOVE TABLE FROM ONE TABLESPACE TO ANOTHER
+ alter table employee move to tablespace  practise;
+ 18.RESIZE THE DATAFILE
+ alter database datafile ' resize M | G| T/u02/oradata/RITECDB/DEVDB/datafile01.dbf/' resize M | G| T
+ 19.RENAME AND RELOCATE THE ONLINE DATA FILE
+ alter database move datafile </db/file/old/path> to </db/file/new/path> Reuse ---> this will overrides the existing file in that location  , this option simply moves datafile from one location to another
+ alter database move datafile </db/file/old/path> to </db/file/new/path>  keep  ---> this will retain old file in the old location and copy it to new location.
+ alter database move datafile </db/file/old/path> to </db/file/new/path>   ---> this option simply renames the datafile in the same location
+ 20.DROP DATAFILE
+ alter tablespace convertrite drop datafile tempfile  
+ 
+ 
+ 
